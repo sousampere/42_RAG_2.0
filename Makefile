@@ -2,7 +2,7 @@
 
 # --- Project variables ---
 
-NAME := ratm
+NAME := src
 VENV := .venv
 PYTHON := $(VENV)/bin/python
 FLAKE8 := $(VENV)/bin/flake8
@@ -59,11 +59,11 @@ lint: install
 	$(PYTHON) -m mypy src --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs
 
 lint-strict: install
-	$(PYTHON) flake8 src ratm.py
-	$(PYTHON) mypy src ratm.py --strict
+	$(PYTHON) flake8 src
+	$(PYTHON) mypy src --strict
 
 debug: install
-	$(PYTHON) -m pdb ratm.py
+	$(PYTHON) -m pdb -m src
 
 index: install
 	$(PYTHON) -m $(NAME) index --max_chunk_size $(MAX_CHUNK_SIZE)
