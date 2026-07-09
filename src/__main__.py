@@ -2,6 +2,7 @@
 
 import fire
 
+
 class RagCLI:
     """
     RAG CLI
@@ -20,7 +21,7 @@ class RagCLI:
     @staticmethod
     def search(
         query: str,
-        k: int = 5) -> None:
+            k: int = 5) -> None:
         """Search the most relevant files in the dataset for a given query.
 
         Args:
@@ -34,7 +35,7 @@ class RagCLI:
     def search_dataset(
         dataset_path: str,
         save_directory: str,
-        k: int = 5) -> None:
+            k: int = 5) -> None:
         """Apply a search operation on a dataset of questions, and exporting
         the results in a given <save_directory> directory.
 
@@ -51,7 +52,7 @@ class RagCLI:
     @staticmethod
     def answer(
         query: str,
-        k: int = 5) -> None:
+            k: int = 5) -> None:
         """Generate a response to your query by giving the search result to
         an LLM, therefore augmenting it with a tailored response.
 
@@ -67,8 +68,8 @@ class RagCLI:
     @staticmethod
     def answer_dataset(
         student_search_results_path: str,
-        save_directory: str) -> None:
-        """Generates answers for the given <student_search_results_path> file 
+            save_directory: str) -> None:
+        """Generates answers for the given <student_search_results_path> file
         containing the output of a previous "search_dataset" action.
 
         Args:
@@ -82,14 +83,16 @@ class RagCLI:
     @staticmethod
     def evaluate(
         student_search_results_path: str,
-        dataset_path: str) -> None:
+            dataset_path: str) -> None:
         """Compare retrieved results with ground truth data.
 
         Args:
-            student_search_results_path (str): Path to JSON file exported when running search on the dataset.
+            student_search_results_path (str): Path to JSON file
+            exported when running search on the dataset.
             dataset_path (str): Ground-truth dataset.
         """
         print("Evaluating your results")
+
 
 if __name__ == '__main__':
     fire.Fire(RagCLI)

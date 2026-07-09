@@ -55,8 +55,8 @@ run: install
 	$(PYTHON) -m $(NAME) $(ARGV)
 
 lint: install
-	$(PYTHON) -m flake8 src ratm.py
-	$(PYTHON) -m mypy src ratm.py --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs
+	$(PYTHON) -m flake8 src
+	$(PYTHON) -m mypy src --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs
 
 lint-strict: install
 	$(PYTHON) flake8 src ratm.py
