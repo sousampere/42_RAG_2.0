@@ -1,22 +1,24 @@
-name: Run Unit Tests
+name: Lint
 
-on: [push, pull_request]
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
 
 jobs:
-  test:
+  lint:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Check out repository code
+    - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Set up Python
-      uses: actions/setup-python@v5
+    - name: Set up uv
+      uses: astral-sh/setup-uv@v5
       with:
-        python-version: '3.11'
+        # Automatically caches the uv cache to speed up subsequent runs
+        enable-cache: true
 
-    - name: Install dependencies
-      run: uv add pytest
-
-    - name: Run Unit Tests with Pytest
-      run: uv run pytest
+    - name: Run linter via Make
+      run: make lint
