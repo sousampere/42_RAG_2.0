@@ -220,3 +220,4 @@ __marimo__/
 # Personnal ignores
 subject.pdf
 .python-version
+data/raw/*
