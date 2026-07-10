@@ -6,6 +6,7 @@ from langchain_core.documents import Document
 from langchain_text_splitters import Language, RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import DirectoryLoader, TextLoader
 import bm25s
+import json
 
 from data_models import MinimalSearchResults, MinimalSource
 from uuid import uuid4
@@ -203,13 +204,67 @@ class BM25sRetriever(BaseRetriever):
         # Return list of Document containing sources
         return documents
 
+    def export(self, path: str = './data/processed') -> None:
+        """
+        Export the index to a folder.
+        """
+        # Verify data
+        if self._retriever is None or self._corpus is None \
+           or self._documents is None:
+            raise RetrieverError('Failed to save an invalid retriever.')
+
+        try:
+            # Export index
+            self._retriever.save(f'{path}/index')
+
+            # Export corpus
+            with open(f'{path}/index/corpus.json', 'w') as f:
+                json.dump(self._corpus, f)
+
+            # Export Documents
+            docs = [doc.model_dump() for doc in self._documents]
+            with open(f'{path}/index/documents.json', 'w') as f:
+                json.dump(docs, f)
+        except (PermissionError):
+            raise RetrieverError("Couldn't export your retriever.")
+
+    def load(self, path: str = './data/processed') -> None:
+        """
+        Loads a previous index that has been exported.
+        """
+        try:
+            # Load retriever
+            self._retriever = bm25s.BM25.load(f'{path}/index')
+
+            # Load corpus
+            with open(f'{path}/index/corpus.json', 'r') as c:
+                self._corpus: list[str] = json.load(c)
+
+            # Load documents
+            with open(f'{path}/index/documents.json', 'r') as d:
+                loaded_data = json.load(d)
+
+                self._documents: list[Document] = [
+                    Document(**doc_dict) for doc_dict in loaded_data
+                ]
+        except FileNotFoundError:
+            raise RetrieverError("Couldn't load a previous retriever.")
+
 
 if __name__ == '__main__':
-    print('init retriever')
+
+    # # Index
+    # print('init retriever')
+    # retriever = BM25sRetriever()
+    # print('index...')
+    # retriever.index(chunk_size=2000, overlap=5/100)
+    # retriever.export()
+
+    # Load retriever
     retriever = BM25sRetriever()
-    print('index...')
-    retriever.index(chunk_size=2000, overlap=5/100)
-    query = 'How to contribute to vllm ?'
+    retriever.load()
+
+    query = 'How to setup an OpenAI server ?'
     print("retrieve for", query, '...')
     results = retriever.retrieve(query, k=5, run_manager=None)
     print(results)
