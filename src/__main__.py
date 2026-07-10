@@ -2,6 +2,10 @@
 
 import fire
 from colorama import Fore
+import json
+from tqdm import tqdm
+
+from .data_models import MinimalSearchResults, StudentSearchResults
 
 from .retriever import BM25sRetriever, RetrieverError
 
@@ -45,7 +49,8 @@ class RagCLI:
         """
         # Invalid data protection
         if k <= 0:
-            print(f"[RAG] ❌ {Fore.RED}Invalid number of sources (must be >= 1).")
+            print(f"[RAG] ❌ {Fore.RED}Invalid number of "
+                  "sources (must be >= 1).")
             return None
 
         # Load retriever
@@ -64,7 +69,8 @@ class RagCLI:
             run_manager=None
         )
         for row in results.retrieved_sources:
-            print(f'{Fore.RESET + row.file_path} {Fore.YELLOW}[{row.first_character_index}:{row.last_character_index}]')
+            print(f'{Fore.RESET + row.file_path} {Fore.YELLOW}['
+                  f'{row.first_character_index}:{row.last_character_index}]')
 
         return None
 
@@ -81,9 +87,50 @@ class RagCLI:
             save_directory (str): Path to save the output file.
             k (int, optional): Number of retrieved sources. Defaults to 5.
         """
-        print(f"Executing search on dataset located at {dataset_path} and "
-              f"saving the result in {save_directory} with {k} sources "
-              "for each query...")
+        # Load retriever
+        retriever = BM25sRetriever()
+        try:
+            retriever.load()
+        except RetrieverError:
+            print(f"[RAG] ❌ {Fore.RED}Couldn't load the previous index. "
+                  "Please indexate the data first.")
+            exit()
+
+        # Import dataset
+        with open(dataset_path, 'r') as f:
+            json_data = json.load(f)
+        dataset = json_data['rag_questions']
+
+        # Start gathering sources for each question
+        dataset_results = StudentSearchResults(
+            search_results=[],
+            k=k
+        )
+        with tqdm(total=len(dataset)) as pbar:
+            for question in dataset:
+                # Retrieve
+                results = retriever.retrieve(
+                    question['question'],
+                    k=k,
+                    run_manager=None
+                )
+                # Add results to dataset_results
+                dataset_results.search_results.append(
+                    MinimalSearchResults(
+                        question_id=question['question_id'],
+                        question=question['question'],
+                        retrieved_sources=results.retrieved_sources
+                    )
+                )
+                pbar.update(1)
+
+        # Export search results
+        search_results = dataset_results.model_dump()
+        with open(save_directory, 'w') as f:
+            json.dump(search_results, f)
+
+        print(f"[RAG] ✅ {Fore.GREEN}Dataset successfully processed !")
+
         return None
 
     @staticmethod

@@ -222,3 +222,5 @@ subject.pdf
 .python-version
 data/raw/*
 data/processed/*
+data/dataset/*
+export.json
