@@ -14,6 +14,7 @@ from uuid import uuid4
 class RetrieverError(Exception):
     pass
 
+
 class NoPreviousIndexError(RetrieverError):
     pass
 
@@ -26,14 +27,16 @@ class AbstractDocumentLoader(ABC):
     the _load_documents(...) function.
     """
     @abstractmethod
-    def _load_documents(self,
-                       chunk_size: int,
-                       overlap: float,
-                       main_directory: str) -> list[Document]:
+    def _load_documents(
+        self,
+        chunk_size: int,
+        overlap: float,
+            main_directory: str) -> list[Document]:
         """
         Loads documents.
         """
         pass
+
 
 class MarkdownPythonDocumentLoader(AbstractDocumentLoader):
     """
@@ -52,7 +55,9 @@ class MarkdownPythonDocumentLoader(AbstractDocumentLoader):
         Method to load Documents from a given file format
         """
         # Load files
-        loader = DirectoryLoader(main_directory, glob=f"**/*.{extension}", loader_cls=TextLoader)
+        loader = DirectoryLoader(main_directory,
+                                 glob=f"**/*.{extension}",
+                                 loader_cls=TextLoader)
         documents = loader.load()
 
         # Chunk files
@@ -70,10 +75,11 @@ class MarkdownPythonDocumentLoader(AbstractDocumentLoader):
 
         return chunks
 
-    def _load_documents(self,
-                       chunk_size: int,
-                       overlap: float,
-                       main_directory: str = './data/raw') -> list[Document]:
+    def _load_documents(
+            self,
+            chunk_size: int,
+            overlap: float,
+            main_directory: str = './data/raw') -> list[Document]:
         """
         Method used to load markdown and python documents, chunk them
         and combine them into one single document type
@@ -123,7 +129,6 @@ class BM25sRetriever(BaseRetriever):
         self._retriever.index(tokenized_corpus)
 
         return self._retriever
-
 
     def retrieve(
             self,
@@ -184,7 +189,9 @@ class BM25sRetriever(BaseRetriever):
 
         # Tokenize query and then retrieve sources
         tokenized_query = bm25s.tokenize(query)
-        retrieved = self._retriever.retrieve(tokenized_query, self._corpus, k=5)
+        retrieved = self._retriever.retrieve(tokenized_query,
+                                             self._corpus,
+                                             k=5)
 
         # Turn sources into Document objects
         documents = []
