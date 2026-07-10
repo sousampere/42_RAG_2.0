@@ -3,7 +3,7 @@
 import fire
 from colorama import Fore
 
-from .retriever import BM25sRetriever, RetrieverError
+from .retriever import BM25sRetriever
 
 
 class RagCLI:
