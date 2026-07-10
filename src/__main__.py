@@ -5,8 +5,8 @@ from colorama import Fore
 import json
 from tqdm import tqdm
 
+from .llm import LLM
 from .data_models import MinimalSearchResults, StudentSearchResults
-
 from .retriever import BM25sRetriever, RetrieverError
 
 
@@ -147,6 +147,13 @@ class RagCLI:
         """
         print(f"Using LLM to answer your query \"{query}\" with "
               f"{k} sources in context...")
+
+        # 
+        llm = LLM()
+
+        llm.load_model(model_name='Qwen/Qwen3-0.6B', device='auto')
+
+
         return None
 
     @staticmethod
