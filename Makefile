@@ -66,4 +66,5 @@ debug: install
 	$(PYTHON) -m pdb -m src
 
 index: install
+	clear
 	$(PYTHON) -m $(NAME) index --max_chunk_size $(MAX_CHUNK_SIZE)
