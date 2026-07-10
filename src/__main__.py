@@ -3,7 +3,7 @@
 import fire
 from colorama import Fore
 
-from .retriever import BM25sRetriever
+from .retriever import BM25sRetriever, RetrieverError
 
 
 class RagCLI:
@@ -18,11 +18,17 @@ class RagCLI:
         Files will be split into chunks of <max_chunk_size>
         characters at maximum.
         """
+        # Invalid data protection
+        if max_chunk_size <= 199:
+            print(f"[RAG] ❌ {Fore.RED}max_chunk_size must be at least 200.")
+            return None
+
         print(f"[RAG] Indexing with {max_chunk_size} chunk size...")
 
         # Index
         retriever = BM25sRetriever()
         retriever.index(max_chunk_size, overlap=5/100)
+        retriever.export()
 
         print(f"[RAG] ✅ {Fore.GREEN}Data indexed successfully !")
         return None
@@ -37,7 +43,29 @@ class RagCLI:
             query (str): String used as reference for the research
             k (int, optional): Number of results to retrieve. Defaults to 5.
         """
-        print(f"Retrieving best top {k} best results for \"{query}\"...")
+        # Invalid data protection
+        if k <= 0:
+            print(f"[RAG] ❌ {Fore.RED}Invalid number of sources (must be >= 1).")
+            return None
+
+        # Load retriever
+        retriever = BM25sRetriever()
+        try:
+            retriever.load()
+        except RetrieverError:
+            print(f"[RAG] ❌ {Fore.RED}Couldn't load the previous index. "
+                  "Please indexate the data first.")
+            exit()
+
+        # Retrieve
+        results = retriever.retrieve(
+            query=query,
+            k=k,
+            run_manager=None
+        )
+        for row in results.retrieved_sources:
+            print(f'{Fore.RESET + row.file_path} {Fore.YELLOW}[{row.first_character_index}:{row.last_character_index}]')
+
         return None
 
     @staticmethod

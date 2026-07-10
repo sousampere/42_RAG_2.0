@@ -192,7 +192,7 @@ class BM25sRetriever(BaseRetriever):
         tokenized_query = bm25s.tokenize(query)
         retrieved = self._retriever.retrieve(tokenized_query,
                                              self._corpus,
-                                             k=5)
+                                             k=k)
 
         # Turn sources into Document objects
         documents = []
