@@ -49,7 +49,8 @@ class RagCLI:
         """
         # Invalid data protection
         if k <= 0:
-            print(f"[RAG] ❌ {Fore.RED}Invalid number of sources (must be >= 1).")
+            print(f"[RAG] ❌ {Fore.RED}Invalid number of "
+                  "sources (must be >= 1).")
             return None
 
         # Load retriever
@@ -68,7 +69,8 @@ class RagCLI:
             run_manager=None
         )
         for row in results.retrieved_sources:
-            print(f'{Fore.RESET + row.file_path} {Fore.YELLOW}[{row.first_character_index}:{row.last_character_index}]')
+            print(f'{Fore.RESET + row.file_path} {Fore.YELLOW}['
+                  f'{row.first_character_index}:{row.last_character_index}]')
 
         return None
 
