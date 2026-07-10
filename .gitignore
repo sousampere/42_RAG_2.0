@@ -221,3 +221,4 @@ __marimo__/
 subject.pdf
 .python-version
 data/raw/*
+data/processed/*
