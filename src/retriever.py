@@ -8,7 +8,7 @@ from langchain_community.document_loaders import DirectoryLoader, TextLoader
 import bm25s
 import json
 
-from data_models import MinimalSearchResults, MinimalSource
+from .data_models import MinimalSearchResults, MinimalSource
 from uuid import uuid4
 
 

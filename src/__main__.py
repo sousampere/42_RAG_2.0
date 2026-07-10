@@ -1,6 +1,9 @@
 #!/usr/bin/python3
 
 import fire
+from colorama import Fore
+
+from .retriever import BM25sRetriever
 
 
 class RagCLI:
@@ -15,7 +18,13 @@ class RagCLI:
         Files will be split into chunks of <max_chunk_size>
         characters at maximum.
         """
-        print(f"Indexing with {max_chunk_size} chunk size...")
+        print(f"[RAG] Indexing with {max_chunk_size} chunk size...")
+
+        # Index
+        retriever = BM25sRetriever()
+        retriever.index(max_chunk_size, overlap=5/100)
+
+        print(f"[RAG] ✅ {Fore.GREEN}Data indexed successfully !")
         return None
 
     @staticmethod
