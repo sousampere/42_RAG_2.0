@@ -123,28 +123,18 @@ class RagCLI:
             k (int, optional): Number of retrieved sources to give to the LLM.
             Defaults to 5.
         """
-        # Get search results for the query
-        retriever = BM25sRetriever()
-        # Try loading retriever
+        rag = RagProcessor()
+
         try:
-            retriever.load()
-        except RetrieverError:
-            print(f"[RAG] ❌ {Fore.RED}Couldn't load the previous index. "
-                  "Please indexate the data first.")
+            answer = rag.answer(
+                query=query,
+                k=k
+            )
+        except RagProcessorError as e:
+            print(f'[RAG] ❌ {Fore.RED}{e}{Fore.RESET}')
             exit()
-        # Retrieve
-        results = retriever.retrieve(
-            query=query,
-            k=k,
-            run_manager=None
-        )
 
-        # Load LLM
-        llm = LLM()
-        llm.load_model(model_name='Qwen/Qwen3-0.6B', device='auto')
-
-        # Print response
-        print(llm.answer(results))
+        print(answer)
 
         return None
 

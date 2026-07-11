@@ -5,6 +5,7 @@ import json
 from colorama import Fore
 from tqdm import tqdm
 
+from .llm import LLM
 from .retriever import BM25sRetriever, RetrieverError
 from .data_models import MinimalSearchResults, StudentSearchResults, StudentSearchResultsAndAnswers
 
@@ -132,12 +133,27 @@ class RagProcessor(AbstractRagProcessor):
         return dataset_results
 
     def answer(self, query: str, k: int) -> str:
-        return super().answer(query, k)
+        # Gather search results with RagProcessor
+        results = self.search(
+            query=query,
+            k=k
+        )
+
+        # Load LLM
+        llm = LLM()
+        llm.load_model(
+            model_name='Qwen/Qwen3-0.6B',
+            device='auto'
+        )
+
+        # Process data into LLM to get the query's answer
+        answer = llm.answer(results)
+
+        # Return LLM answer
+        return answer
 
     def answer_dataset(self, student_search_results_path: str, save_directory: str) -> StudentSearchResultsAndAnswers:
         return super().answer_dataset(student_search_results_path, save_directory)
 
     def evaluate(self, student_search_result_path: str, dataset_path: str):
         return super().evaluate(student_search_result_path, dataset_path)
-
-    
