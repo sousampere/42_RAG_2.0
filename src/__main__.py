@@ -3,10 +3,12 @@
 import fire
 from colorama import Fore
 import json
+from sympy import Q
 from tqdm import tqdm
 import os
 import logging
 
+from .rag_processor import RagProcessor, RagProcessorError
 from .llm import LLM
 from .data_models import MinimalSearchResults, StudentSearchResults
 from .retriever import BM25sRetriever, RetrieverError
@@ -29,19 +31,16 @@ class RagCLI:
         Files will be split into chunks of <max_chunk_size>
         characters at maximum.
         """
-        # Invalid data protection
-        if max_chunk_size <= 199:
-            print(f"[RAG] ❌ {Fore.RED}max_chunk_size must be at least 200.")
-            return None
+        rag = RagProcessor()
 
-        print(f"[RAG] Indexing with {max_chunk_size} chunk size...")
+        try:
+            rag.index(max_chunk_size=max_chunk_size)
+        except RagProcessorError as e:
+            print(f'[RAG] ❌ {Fore.RED}{e}{Fore.RESET}')
+            exit()
 
-        # Index
-        retriever = BM25sRetriever()
-        retriever.index(max_chunk_size, overlap=5/100)
-        retriever.export()
+        print(f"[RAG] ✅ {Fore.GREEN}Data indexed successfully !{Fore.RESET}")
 
-        print(f"[RAG] ✅ {Fore.GREEN}Data indexed successfully !")
         return None
 
     @staticmethod
@@ -54,27 +53,20 @@ class RagCLI:
             query (str): String used as reference for the research
             k (int, optional): Number of results to retrieve. Defaults to 5.
         """
-        # Invalid data protection
-        if k <= 0:
-            print(f"[RAG] ❌ {Fore.RED}Invalid number of "
-                  "sources (must be >= 1).")
-            return None
+        # Load RagProcessor
+        rag = RagProcessor()
 
-        # Load retriever
-        retriever = BM25sRetriever()
+        # Start searching using RagProcessor
         try:
-            retriever.load()
-        except RetrieverError:
-            print(f"[RAG] ❌ {Fore.RED}Couldn't load the previous index. "
-                  "Please indexate the data first.")
+            results = rag.search(
+                query=query,
+                k=k
+            )
+        except RagProcessorError as e:
+            print(f'[RAG] ❌ {Fore.RED}{e}{Fore.RESET}')
             exit()
 
-        # Retrieve
-        results = retriever.retrieve(
-            query=query,
-            k=k,
-            run_manager=None
-        )
+        # Print results
         for row in results.retrieved_sources:
             print(f'{Fore.RESET + row.file_path} {Fore.YELLOW}['
                   f'{row.first_character_index}:{row.last_character_index}]')
@@ -94,49 +86,28 @@ class RagCLI:
             save_directory (str): Path to save the output file.
             k (int, optional): Number of retrieved sources. Defaults to 5.
         """
-        # Load retriever
-        retriever = BM25sRetriever()
+        rag = RagProcessor()
+
         try:
-            retriever.load()
-        except RetrieverError:
-            print(f"[RAG] ❌ {Fore.RED}Couldn't load the previous index. "
-                  "Please indexate the data first.")
+            dataset_results = rag.search_dataset(
+                dataset_path=dataset_path,
+                save_directory=save_directory,
+                k=k
+            )
+        except RagProcessorError as e:
+            print(f'[RAG] ❌ {Fore.RED}{e}{Fore.RESET}')
             exit()
-
-        # Import dataset
-        with open(dataset_path, 'r') as f:
-            json_data = json.load(f)
-        dataset = json_data['rag_questions']
-
-        # Start gathering sources for each question
-        dataset_results = StudentSearchResults(
-            search_results=[],
-            k=k
-        )
-        with tqdm(total=len(dataset)) as pbar:
-            for question in dataset:
-                # Retrieve
-                results = retriever.retrieve(
-                    question['question'],
-                    k=k,
-                    run_manager=None
-                )
-                # Add results to dataset_results
-                dataset_results.search_results.append(
-                    MinimalSearchResults(
-                        question_id=question['question_id'],
-                        question=question['question'],
-                        retrieved_sources=results.retrieved_sources
-                    )
-                )
-                pbar.update(1)
 
         # Export search results
         search_results = dataset_results.model_dump()
-        with open(save_directory, 'w') as f:
-            json.dump(search_results, f)
+        try:
+            with open(save_directory, 'w') as f:
+                json.dump(search_results, f)
+        except (PermissionError):
+            print(f'[RAG] ❌ {Fore.RED}Could not save the output.{Fore.RESET}')
+            exit()
 
-        print(f"[RAG] ✅ {Fore.GREEN}Dataset successfully processed !")
+        print(f"[RAG] ✅ {Fore.GREEN}Dataset successfully processed !{Fore.RESET}")
 
         return None
 
