@@ -1,7 +1,7 @@
 
 from abc import ABC, abstractmethod
-
 from transformers import pipeline
+import re
 
 from .data_models import MinimalSearchResults
 
@@ -61,7 +61,7 @@ class LLM(LLMAugmenter):
                 'role': 'system',
                 'content': 'You will answer the user\'s query using '
                            'the provided sources. The answer will be '
-                           ' concise. The sources are : \n\n'
+                           ' concise, in plain text. The sources are : \n\n'
                            f'{'\n\n'.join(sources)}'
             },
             {
@@ -71,10 +71,8 @@ class LLM(LLMAugmenter):
         ]
 
         # Generate LLM answer
-        print(messages)
-        for s in search_results.retrieved_sources:
-            print(s.file_path)
         output = self._pipe(messages)
+        llm_response = str(output[0]["generated_text"][-1]["content"])
 
         # Return LLM generated output
-        return str(output[0]["generated_text"][-1]["content"])
+        return re.sub(r"<think>[\s\S]*?<\/think>\s*", '', llm_response)

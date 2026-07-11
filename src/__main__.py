@@ -4,16 +4,23 @@ import fire
 from colorama import Fore
 import json
 from tqdm import tqdm
+import os
+import logging
 
 from .llm import LLM
 from .data_models import MinimalSearchResults, StudentSearchResults
 from .retriever import BM25sRetriever, RetrieverError
+
+# Disable huggingface warnings
+os.environ['HF_HUB_DISABLE_WARNINGS'] = '1'
+logging.getLogger('transformers').setLevel(logging.ERROR)
 
 
 class RagCLI:
     """
     RAG CLI
     """
+
     @staticmethod
     def index(max_chunk_size: int = 2000) -> None:
         """
@@ -145,9 +152,6 @@ class RagCLI:
             k (int, optional): Number of retrieved sources to give to the LLM.
             Defaults to 5.
         """
-        print(f"Using LLM to answer your query \"{query}\" with "
-              f"{k} sources in context...")
-
         # Get search results for the query
         retriever = BM25sRetriever()
         # Try loading retriever
@@ -203,4 +207,5 @@ class RagCLI:
 
 
 if __name__ == '__main__':
+    # Launch CLI
     fire.Fire(RagCLI, serialize='')
