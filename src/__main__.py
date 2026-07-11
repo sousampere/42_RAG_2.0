@@ -5,8 +5,8 @@ from colorama import Fore
 import json
 from tqdm import tqdm
 
+from .llm import LLM
 from .data_models import MinimalSearchResults, StudentSearchResults
-
 from .retriever import BM25sRetriever, RetrieverError
 
 
@@ -147,6 +147,30 @@ class RagCLI:
         """
         print(f"Using LLM to answer your query \"{query}\" with "
               f"{k} sources in context...")
+
+        # Get search results for the query
+        retriever = BM25sRetriever()
+        # Try loading retriever
+        try:
+            retriever.load()
+        except RetrieverError:
+            print(f"[RAG] ❌ {Fore.RED}Couldn't load the previous index. "
+                  "Please indexate the data first.")
+            exit()
+        # Retrieve
+        results = retriever.retrieve(
+            query=query,
+            k=k,
+            run_manager=None
+        )
+
+        # Load LLM
+        llm = LLM()
+        llm.load_model(model_name='Qwen/Qwen3-0.6B', device='auto')
+
+        # Print response
+        print(llm.answer(results))
+
         return None
 
     @staticmethod
@@ -179,4 +203,4 @@ class RagCLI:
 
 
 if __name__ == '__main__':
-    fire.Fire(RagCLI)
+    fire.Fire(RagCLI, serialize='')
