@@ -3,15 +3,10 @@
 import fire
 from colorama import Fore
 import json
-from sympy import Q
-from tqdm import tqdm
 import os
 import logging
 
 from .rag_processor import RagProcessor, RagProcessorError
-from .llm import LLM
-from .data_models import MinimalSearchResults, StudentSearchResults
-from .retriever import BM25sRetriever, RetrieverError
 
 # Disable huggingface warnings
 os.environ['HF_HUB_DISABLE_WARNINGS'] = '1'
@@ -107,7 +102,8 @@ class RagCLI:
             print(f'[RAG] ❌ {Fore.RED}Could not save the output.{Fore.RESET}')
             exit()
 
-        print(f"[RAG] ✅ {Fore.GREEN}Dataset successfully processed !{Fore.RESET}")
+        print(f"[RAG] ✅ {Fore.GREEN}Dataset successfully "
+              f"processed !{Fore.RESET}")
 
         return None
 
@@ -169,4 +165,4 @@ class RagCLI:
 
 if __name__ == '__main__':
     # Launch CLI
-    fire.Fire(RagCLI, serialize='')
+    fire.Fire(RagCLI)

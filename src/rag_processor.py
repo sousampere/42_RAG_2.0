@@ -2,12 +2,12 @@
 
 from abc import ABC, abstractmethod
 import json
-from colorama import Fore
 from tqdm import tqdm
 
 from .llm import LLM
 from .retriever import BM25sRetriever, RetrieverError
-from .data_models import MinimalSearchResults, StudentSearchResults, StudentSearchResultsAndAnswers
+from .data_models import MinimalSearchResults, StudentSearchResults, \
+    StudentSearchResultsAndAnswers
 
 
 class RagProcessorError(Exception):
@@ -28,7 +28,7 @@ class AbstractRagProcessor(ABC):
         self,
         dataset_path: str,
         save_directory: str,
-        k: int) -> StudentSearchResults:
+            k: int) -> StudentSearchResults:
         pass
 
     @abstractmethod
@@ -39,14 +39,14 @@ class AbstractRagProcessor(ABC):
     def answer_dataset(
         self,
         student_search_results_path: str,
-        save_directory: str) -> StudentSearchResultsAndAnswers:
+            save_directory: str) -> StudentSearchResultsAndAnswers:
         pass
 
     @abstractmethod
     def evaluate(
         self,
         student_search_result_path: str,
-        dataset_path: str):
+            dataset_path: str) -> None:
         pass
 
 
@@ -89,7 +89,10 @@ class RagProcessor(AbstractRagProcessor):
 
         return results
 
-    def search_dataset(self, dataset_path: str, save_directory: str, k: int) -> StudentSearchResults:
+    def search_dataset(
+            self,
+            dataset_path: str,
+            save_directory: str, k: int) -> StudentSearchResults:
         # Load retriever
         retriever = BM25sRetriever()
         try:
@@ -111,7 +114,8 @@ class RagProcessor(AbstractRagProcessor):
             search_results=[],
             k=k
         )
-        with tqdm(total=len(dataset), colour='green', ascii=" ▖▘▝▞▚▋█") as pbar:
+        with tqdm(total=len(dataset),
+                  colour='green', ascii=" ▖▘▝▞▚▋█") as pbar:
             pbar.set_description(f'Processing {len(dataset)} questions')
             for question in dataset:
                 # Retrieve
@@ -147,13 +151,17 @@ class RagProcessor(AbstractRagProcessor):
         )
 
         # Process data into LLM to get the query's answer
-        answer = llm.answer(results)
+        answer = str(llm.answer(results))
 
         # Return LLM answer
         return answer
 
-    def answer_dataset(self, student_search_results_path: str, save_directory: str) -> StudentSearchResultsAndAnswers:
-        return super().answer_dataset(student_search_results_path, save_directory)
+    def answer_dataset(self,
+                       student_search_results_path: str,
+                       save_directory: str) -> StudentSearchResultsAndAnswers:
+        return StudentSearchResultsAndAnswers
 
-    def evaluate(self, student_search_result_path: str, dataset_path: str):
-        return super().evaluate(student_search_result_path, dataset_path)
+    def evaluate(self,
+                 student_search_result_path: str,
+                 dataset_path: str) -> None:
+        return None
