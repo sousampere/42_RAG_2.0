@@ -11,16 +11,28 @@ from .data_models import MinimalSearchResults, StudentSearchResults, \
 
 
 class RagProcessorError(Exception):
+    """
+    Errors related to the RagProcessor
+    """
     pass
 
 
 class AbstractRagProcessor(ABC):
+    """
+    Abstract class for a RagProcessor
+    """
     @abstractmethod
     def index(self, max_chunk_size: int) -> bool:
+        """
+        Method used to index data
+        """
         pass
 
     @abstractmethod
     def search(self, query: str, k: int) -> MinimalSearchResults:
+        """
+        Method used to retrieve data from a query
+        """
         pass
 
     @abstractmethod
@@ -29,10 +41,16 @@ class AbstractRagProcessor(ABC):
         dataset_path: str,
         save_directory: str,
             k: int) -> StudentSearchResults:
+        """
+        Method used to process a whole dataset of questions
+        """
         pass
 
     @abstractmethod
     def answer(self, query: str, k: int) -> str:
+        """
+        Method used to answer a query using sources
+        """
         pass
 
     @abstractmethod
@@ -40,6 +58,9 @@ class AbstractRagProcessor(ABC):
         self,
         student_search_results_path: str,
             save_directory: str) -> StudentSearchResultsAndAnswers:
+        """
+        Method to answer a dataset of questions
+        """
         pass
 
     @abstractmethod
@@ -47,11 +68,26 @@ class AbstractRagProcessor(ABC):
         self,
         student_search_result_path: str,
             dataset_path: str) -> None:
+        """
+        Method used to evaluate the performance of the retriever
+        """
         pass
 
 
 class RagProcessor(AbstractRagProcessor):
+    """
+    RagProcessor class that orchestrate the RAG
+
+    It's the core of the program. It has multiple methods :
+    index, search, search_dataset, answer, answer_dataset
+    and evaluate. All these methods are used to interract
+    with the documentation in data/raw/*.
+    """
     def index(self, max_chunk_size: int) -> bool:
+        """
+        Index the data in data/raw and export the retriever
+        for further use.
+        """
         # Invalid data protection
         if max_chunk_size <= 199:
             raise RagProcessorError("max_chunk_size must be at least 200.")
@@ -67,6 +103,10 @@ class RagProcessor(AbstractRagProcessor):
         return True
 
     def search(self, query: str, k: int) -> MinimalSearchResults:
+        """
+        Search the data for a query. Returns the search result
+        as a MinimalSearchResults object.
+        """
         # Invalid data protection
         if k <= 0:
             raise RagProcessorError('Invalid number of '
@@ -93,6 +133,10 @@ class RagProcessor(AbstractRagProcessor):
             self,
             dataset_path: str,
             save_directory: str, k: int) -> StudentSearchResults:
+        """
+        Searches for sources for all questions in the given
+        dataset_path. Returns results as a StudentSearchResults object.
+        """
         # Load retriever
         retriever = BM25sRetriever()
         try:
@@ -137,6 +181,11 @@ class RagProcessor(AbstractRagProcessor):
         return dataset_results
 
     def answer(self, query: str, k: int) -> str:
+        """
+        Answer a given query by retrieveing the best docs
+        from the indexed data, and giving it to an LLM to
+        make it create a custom answer to the query.
+        """
         # Gather search results with RagProcessor
         results = self.search(
             query=query,
@@ -159,9 +208,17 @@ class RagProcessor(AbstractRagProcessor):
     def answer_dataset(self,
                        student_search_results_path: str,
                        save_directory: str) -> StudentSearchResultsAndAnswers:
+        """
+        Answer all question with sources from a previously
+        processed dataset of queries.
+        """
         return StudentSearchResultsAndAnswers
 
     def evaluate(self,
                  student_search_result_path: str,
                  dataset_path: str) -> None:
+        """
+        Evaluate the results of the RAG with ground truth
+        datas to give a ratio of performances.
+        """
         return None
