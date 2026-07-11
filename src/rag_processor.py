@@ -94,7 +94,7 @@ class RagProcessor(AbstractRagProcessor):
 
         # Index
         retriever = BM25sRetriever()
-        retriever.index(max_chunk_size, overlap=5/100)
+        retriever.index(max_chunk_size, overlap=15/100)
         try:
             retriever.export()
         except (FileNotFoundError, PermissionError):
@@ -168,6 +168,8 @@ class RagProcessor(AbstractRagProcessor):
                     k=k,
                     run_manager=None
                 )
+                # Make sure there is no more than 10 sources
+                results.retrieved_sources = results.retrieved_sources[:10]
                 # Add results to dataset_results
                 dataset_results.search_results.append(
                     MinimalSearchResults(

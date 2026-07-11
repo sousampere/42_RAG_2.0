@@ -65,6 +65,27 @@ lint-strict: install
 debug: install
 	$(PYTHON) -m pdb -m src
 
+# --- Automation of running prompts ---
+
 index: install
 	clear
 	$(PYTHON) -m $(NAME) index --max_chunk_size $(MAX_CHUNK_SIZE)
+
+search: install
+	uv run python -m src search "How to setup an OpenAI server ?" --k 5
+
+search_dataset: install
+	uv run python -m src search_dataset --dataset_path 'data/datasets/UnansweredQuestions/dataset_code_public.json' --k 10 --save_directory data/output/search_results/UnansweredQuestions/dataset_code_public.json
+
+answer: install
+	uv run python -m src answer "What is the type hint for the kv_range_for_decode parameter in the _attention_with_mask method?"
+
+# --- Moulinette ---
+
+moulinette-code: install
+	uv run python -m src search_dataset --dataset_path 'data/datasets/UnansweredQuestions/dataset_code_public.json' --k 10 --save_directory data/output/search_results/UnansweredQuestions/dataset_code_public.json
+	./moulinette/moulinette-ubuntu evaluate_student_search_results 'data/output/search_results/UnansweredQuestions/dataset_code_public.json' 'data/datasets/AnsweredQuestions/dataset_code_public.json' --k 10
+
+moulinette-docs: install
+	uv run python -m src search_dataset --dataset_path 'data/datasets/UnansweredQuestions/dataset_docs_public.json' --k 10 --save_directory data/output/search_results/UnansweredQuestions/dataset_docs_public.json
+	./moulinette/moulinette-ubuntu evaluate_student_search_results 'data/output/search_results/UnansweredQuestions/dataset_docs_public.json' 'data/datasets/AnsweredQuestions/dataset_docs_public.json' --k 10
