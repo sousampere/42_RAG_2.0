@@ -145,9 +145,29 @@ class RagCLI:
             student_search_results_path (str): File containing search results
             save_directory (str): Output with the LLM responses
         """
-        print("Generating custom responses for the "
-              f"search results in {student_search_results_path} and saving "
-              f"the result in {save_directory}.")
+        rag = RagProcessor()
+
+        try:
+            # Gather answers
+            answers = rag.answer_dataset(
+                student_search_results_path=student_search_results_path,
+            )
+        except RagProcessorError as e:
+            print(f'[RAG] ❌ {Fore.RED}{e}{Fore.RESET}')
+            exit()
+
+        # Export search results
+        search_results = answers.model_dump()
+        try:
+            with open(save_directory, 'w') as f:
+                json.dump(search_results, f)
+        except (PermissionError):
+            print(f'[RAG] ❌ {Fore.RED}Could not save the output.{Fore.RESET}')
+            exit()
+
+        print(f"[RAG] ✅ {Fore.GREEN}Queries successfully answered !")
+
+        return None
 
     @staticmethod
     def evaluate(

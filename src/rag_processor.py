@@ -2,11 +2,14 @@
 
 from abc import ABC, abstractmethod
 import json
+from json import JSONDecodeError
+from pydantic import ValidationError
 from tqdm import tqdm
 
 from .llm import LLM
 from .retriever import BM25sRetriever, RetrieverError
-from .data_models import MinimalSearchResults, StudentSearchResults, \
+from .data_models import MinimalAnswer, MinimalSearchResults, \
+    StudentSearchResults, \
     StudentSearchResultsAndAnswers
 
 
@@ -56,8 +59,8 @@ class AbstractRagProcessor(ABC):
     @abstractmethod
     def answer_dataset(
         self,
-        student_search_results_path: str,
-            save_directory: str) -> StudentSearchResultsAndAnswers:
+            student_search_results_path: str
+            ) -> StudentSearchResultsAndAnswers:
         """
         Method to answer a dataset of questions
         """
@@ -158,8 +161,7 @@ class RagProcessor(AbstractRagProcessor):
             search_results=[],
             k=k
         )
-        with tqdm(total=len(dataset),
-                  colour='green', ascii=" ▖▘▝▞▚▋█") as pbar:
+        with tqdm(total=len(dataset)) as pbar:
             pbar.set_description(f'Processing {len(dataset)} questions')
             for question in dataset:
                 # Retrieve
@@ -207,14 +209,57 @@ class RagProcessor(AbstractRagProcessor):
         # Return LLM answer
         return answer
 
-    def answer_dataset(self,
-                       student_search_results_path: str,
-                       save_directory: str) -> StudentSearchResultsAndAnswers:
+    def answer_dataset(
+            self,
+            student_search_results_path: str
+            ) -> StudentSearchResultsAndAnswers:
         """
         Answer all question with sources from a previously
         processed dataset of queries.
         """
-        return StudentSearchResultsAndAnswers
+        # Load data
+        try:
+            with open(student_search_results_path, 'r') as f:
+                data = json.load(f)
+            results = StudentSearchResults.model_validate(data)
+        except (ValidationError,
+                PermissionError,
+                JSONDecodeError,
+                UnicodeEncodeError):
+            raise RagProcessorError('Could\'t load the '
+                                    'student search result file.')
+        except (OSError):
+            raise RagProcessorError('Student search result file not found.')
+
+        # Load LLM
+        llm = LLM()
+        llm.load_model(
+            model_name='Qwen/Qwen3-0.6B',
+            device='auto'
+        )
+
+        # Answer each data
+        answers = StudentSearchResultsAndAnswers(
+            search_results=[],
+            k=results.k
+        )
+
+        # Process each query
+        with tqdm(total=len(results.search_results), desc='Answering') as pbar:
+            for result in results.search_results:
+                # Process data into LLM to get the query's answer
+                answer = str(llm.answer(result))
+                answers.search_results.append(
+                    MinimalAnswer(
+                        question_id=result.question_id,
+                        question=result.question,
+                        retrieved_sources=result.retrieved_sources,
+                        answer=answer
+                    )
+                )
+                pbar.update(1)
+
+        return answers
 
     def evaluate(self,
                  student_search_result_path: str,
@@ -223,4 +268,5 @@ class RagProcessor(AbstractRagProcessor):
         Evaluate the results of the RAG with ground truth
         datas to give a ratio of performances.
         """
+
         return None
