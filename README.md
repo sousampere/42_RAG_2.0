@@ -96,13 +96,35 @@ I had some pain with calculating the overlap by my own, but ended up finding a f
 
 This RAG can be used to retrieve information over any private data that a normal LLM wouldn't know.
 
-# 🔼 Bonus
+# 🔼 Bonus — API
 
-As it is a bonus in the project, I made a small API that can be interracted.
+As a bonus, a small FastAPI server exposes two endpoints. Start it with:
 
 ```bash
 make start-api
 ```
+
+Both endpoints accept a JSON body with a `query` string and an optional `k` (number of results, default 5).
+
+### `POST /search` — Retrieve relevant sources
+
+```bash
+curl -X POST http://localhost:8000/search \
+  -H "Content-Type: application/json" \
+  -d '{"query": "How to configure the OpenAI server?", "k": 3}'
+```
+
+Returns the top-k chunks with their scores and metadata.
+
+### `POST /answer` — Get a generated answer
+
+```bash
+curl -X POST http://localhost:8000/answer \
+  -H "Content-Type: application/json" \
+  -d '{"query": "How to configure the OpenAI server?", "k": 5}'
+```
+
+Returns an LLM-generated answer grounded in the retrieved sources.
 
 
 # 🚀 Made by
