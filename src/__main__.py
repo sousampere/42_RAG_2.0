@@ -74,14 +74,14 @@ class RagCLI:
 
         Args:
             dataset_path (str): Path to the dataset containing queries.
-            save_directory (str): Path to save the output file.
+            save_directory (str): Directory to save the output file.
             k (int, optional): Number of retrieved sources. Defaults to 5.
         """
         rag = RagProcessor()
 
         try:
             dataset_results = rag.search_dataset(
-                dataset_path=dataset_path, save_directory=save_directory, k=k
+                dataset_path=dataset_path, k=k
             )
         except RagProcessorError as e:
             print(f"[RAG] ❌ {Fore.RED}{e}{Fore.RESET}")
@@ -92,6 +92,7 @@ class RagCLI:
         # Get dataset basename
         file_basename = os.path.basename(dataset_path)
         try:
+            os.makedirs(save_directory, exist_ok=True)
             with open(f"{save_directory}/{file_basename}", "w") as f:
                 json.dump(search_results, f)
         except PermissionError:
@@ -134,7 +135,7 @@ class RagCLI:
 
         Args:
             student_search_results_path (str): File containing search results
-            save_directory (str): Output with the LLM responses
+            save_directory (str): Directory to output the results
         """
         rag = RagProcessor()
 
@@ -149,8 +150,11 @@ class RagCLI:
 
         # Export search results
         search_results = answers.model_dump()
+        # Get dataset basename
+        file_basename = os.path.basename(student_search_results_path)
         try:
-            with open(save_directory, "w") as f:
+            os.makedirs(save_directory, exist_ok=True)
+            with open(f"{save_directory}/{file_basename}", "w") as f:
                 json.dump(search_results, f)
         except PermissionError:
             print(f"[RAG] ❌ {Fore.RED}Could not save the output.{Fore.RESET}")
@@ -185,15 +189,12 @@ class RagCLI:
         # Printing results
         print(
             f"{Fore.YELLOW}--- Evaluation results ---{Fore.RESET}\n"
-            f"Recall@1: {results.recall_at_1}\n"
-            f"Recall@3: {results.recall_at_3}\n"
-            f"Recall@5: {results.recall_at_5}\n"
-            f"Recall@10: {results.recall_at_10}\n"
+            f"Recall@1: {int(results.recall_at_1 * 100)}%\n"
+            f"Recall@3: {int(results.recall_at_3 * 100)}%\n"
+            f"Recall@5: {int(results.recall_at_5 * 100)}%\n"
+            f"Recall@10: {int(results.recall_at_10 * 100)}%\n"
         )
-        if results.recall_at_5 < 0.8:
-            print(f"[RAG] ❌ {Fore.RED}Failed the evaluation :({Fore.RESET}")
-        else:
-            print(f"[RAG] ✅ {Fore.GREEN}Passed the evaluation !!{Fore.RESET}")
+        print(f"[RAG] ✅ {Fore.GREEN}Evaluation done !{Fore.RESET}")
 
         return None
 

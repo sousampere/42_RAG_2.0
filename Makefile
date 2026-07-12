@@ -65,6 +65,10 @@ lint-strict: install
 debug: install
 	$(PYTHON) -m pdb -m src
 
+clean:
+	rm -rf data/processed/*
+	rm -rf data/output/search_results/*
+
 # --- Automation of running prompts ---
 
 index: install

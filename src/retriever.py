@@ -249,22 +249,3 @@ class BM25sRetriever(BaseRetriever):
                 ]
         except FileNotFoundError:
             raise RetrieverError("Couldn't load a previous retriever.")
-
-
-if __name__ == '__main__':
-
-    # # Index
-    # print('init retriever')
-    # retriever = BM25sRetriever()
-    # print('index...')
-    # retriever.index(chunk_size=2000, overlap=5/100)
-    # retriever.export()
-
-    # Load retriever
-    retriever = BM25sRetriever()
-    retriever.load()
-
-    query = 'How to setup an OpenAI server ?'
-    print("retrieve for", query, '...')
-    results = retriever.retrieve(query, k=5, run_manager=None)
-    print(results)
