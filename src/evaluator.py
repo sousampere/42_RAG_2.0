@@ -64,10 +64,10 @@ class Evaluator:
 
         try:
             results = EvaluationResult(
-                recall_at_1=k1,
-                recall_at_3=k3,
-                recall_at_5=k5,
-                recall_at_10=k10,
+                recall_at_1=round(k1, 2),
+                recall_at_3=round(k3, 2),
+                recall_at_5=round(k5, 2),
+                recall_at_10=round(k10, 2),
                 questions_evaluated=len(search_results.search_results)
             )
         except ValidationError:
@@ -80,6 +80,12 @@ class Evaluator:
         search_results: StudentSearchResults,
         ground_truth: RagDataset,
             k: int) -> float:
+        """
+        Calculate the recall@k score over the whole dataset
+        compared to the ground-truth dataset.
+
+        Return a ratio of good retrieving (overlap of 0.05% at least)
+        """
         score = 0
         # Compare each question with the ground truth
         for question in search_results.search_results:

@@ -42,7 +42,6 @@ class AbstractRagProcessor(ABC):
     def search_dataset(
         self,
         dataset_path: str,
-        save_directory: str,
             k: int) -> StudentSearchResults:
         """
         Method used to process a whole dataset of questions
@@ -66,16 +65,6 @@ class AbstractRagProcessor(ABC):
         """
         pass
 
-    @abstractmethod
-    def evaluate(
-        self,
-        student_search_result_path: str,
-            dataset_path: str) -> None:
-        """
-        Method used to evaluate the performance of the retriever
-        """
-        pass
-
 
 class RagProcessor(AbstractRagProcessor):
     """
@@ -92,7 +81,7 @@ class RagProcessor(AbstractRagProcessor):
         for further use.
         """
         # Invalid data protection
-        if max_chunk_size <= 199:
+        if max_chunk_size < 200:
             raise RagProcessorError("max_chunk_size must be at least 200.")
 
         # Index
@@ -114,6 +103,8 @@ class RagProcessor(AbstractRagProcessor):
         if k <= 0:
             raise RagProcessorError('Invalid number of '
                                     'sources (must be >= 1).')
+        if query == '':
+            raise RagProcessorError('Please, provide a query.')
 
         # Load retriever
         retriever = BM25sRetriever()
@@ -135,7 +126,7 @@ class RagProcessor(AbstractRagProcessor):
     def search_dataset(
             self,
             dataset_path: str,
-            save_directory: str, k: int) -> StudentSearchResults:
+            k: int) -> StudentSearchResults:
         """
         Searches for sources for all questions in the given
         dataset_path. Returns results as a StudentSearchResults object.
@@ -190,6 +181,12 @@ class RagProcessor(AbstractRagProcessor):
         from the indexed data, and giving it to an LLM to
         make it create a custom answer to the query.
         """
+        # Verify inputs
+        if k < 1:
+            raise RagProcessorError('Invalid k.')
+        if query == '':
+            raise RagProcessorError('Invalid query.')
+
         # Gather search results with RagProcessor
         results = self.search(
             query=query,

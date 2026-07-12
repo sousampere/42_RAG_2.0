@@ -222,7 +222,5 @@ subject.pdf
 .python-version
 data/raw/*
 data/processed/*
-data/datasets/*
 export.json
 moulinette/*
-data/output/*
