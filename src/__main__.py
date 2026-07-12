@@ -95,8 +95,10 @@ class RagCLI:
 
         # Export search results
         search_results = dataset_results.model_dump()
+        # Get dataset basename
+        file_basename = os.path.basename(dataset_path)
         try:
-            with open(save_directory, 'w') as f:
+            with open(f'{save_directory}/{file_basename}', 'w') as f:
                 json.dump(search_results, f)
         except (PermissionError):
             print(f'[RAG] ❌ {Fore.RED}Could not save the output.{Fore.RESET}')

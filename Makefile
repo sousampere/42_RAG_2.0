@@ -59,8 +59,8 @@ lint: install
 	$(PYTHON) -m mypy src --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs
 
 lint-strict: install
-	$(PYTHON) flake8 src
-	$(PYTHON) mypy src --strict
+	$(PYTHON) -m flake8 src
+	$(PYTHON) -m mypy src --strict
 
 debug: install
 	$(PYTHON) -m pdb -m src

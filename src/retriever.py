@@ -215,15 +215,15 @@ class BM25sRetriever(BaseRetriever):
 
         try:
             # Export index
-            self._retriever.save(f'{path}/index')
+            self._retriever.save(path)
 
             # Export corpus
-            with open(f'{path}/index/corpus.json', 'w') as f:
+            with open(f'{path}/corpus.json', 'w') as f:
                 json.dump(self._corpus, f)
 
             # Export Documents
             docs = [doc.model_dump() for doc in self._documents]
-            with open(f'{path}/index/documents.json', 'w') as f:
+            with open(f'{path}/documents.json', 'w') as f:
                 json.dump(docs, f)
         except (PermissionError):
             raise RetrieverError("Couldn't export your retriever.")
@@ -234,14 +234,14 @@ class BM25sRetriever(BaseRetriever):
         """
         try:
             # Load retriever
-            self._retriever = bm25s.BM25.load(f'{path}/index')
+            self._retriever = bm25s.BM25.load(path)
 
             # Load corpus
-            with open(f'{path}/index/corpus.json', 'r') as c:
+            with open(f'{path}/corpus.json', 'r') as c:
                 self._corpus: list[str] = json.load(c)
 
             # Load documents
-            with open(f'{path}/index/documents.json', 'r') as d:
+            with open(f'{path}/documents.json', 'r') as d:
                 loaded_data = json.load(d)
 
                 self._documents: list[Document] = [
