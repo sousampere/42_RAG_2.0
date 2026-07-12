@@ -22,3 +22,6 @@ jobs:
 
     - name: Run linter via Make
       run: make lint
+
+    - name: Run strict linter via Make
+      run: make lint-strict
