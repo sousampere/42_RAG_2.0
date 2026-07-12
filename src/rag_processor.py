@@ -260,13 +260,3 @@ class RagProcessor(AbstractRagProcessor):
                 pbar.update(1)
 
         return answers
-
-    def evaluate(self,
-                 student_search_result_path: str,
-                 dataset_path: str) -> None:
-        """
-        Evaluate the results of the RAG with ground truth
-        datas to give a ratio of performances.
-        """
-
-        return None

@@ -75,7 +75,7 @@ search: install
 	uv run python -m src search "How to setup an OpenAI server ?" --k 5
 
 search_dataset: install
-	uv run python -m src search_dataset --dataset_path 'data/datasets/UnansweredQuestions/dataset_code_public.json' --k 10 --save_directory data/output/search_results/UnansweredQuestions/dataset_code_public.json
+	uv run python -m src search_dataset --dataset_path 'data/datasets/UnansweredQuestions/dataset_code_public.json' --k 10 --save_directory data/output/search_results/UnansweredQuestions
 
 answer: install
 	uv run python -m src answer "What is the type hint for the kv_range_for_decode parameter in the _attention_with_mask method?"

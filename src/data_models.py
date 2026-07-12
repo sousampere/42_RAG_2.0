@@ -46,7 +46,7 @@ class RagDataset(BaseModel):
     - rag_question: list[AnsweredQuestion | UnansweredQuestion] -> List of
         questions in the dataset
     """
-    rag_question: list[AnsweredQuestion | UnansweredQuestion]
+    rag_questions: list[AnsweredQuestion | UnansweredQuestion]
 
 
 class MinimalSearchResults(BaseModel):
