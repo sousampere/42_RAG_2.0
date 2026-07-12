@@ -96,6 +96,15 @@ I had some pain with calculating the overlap by my own, but ended up finding a f
 
 This RAG can be used to retrieve information over any private data that a normal LLM wouldn't know.
 
+# 🔼 Bonus
+
+As it is a bonus in the project, I made a small API that can be interracted.
+
+```bash
+make start-api
+```
+
+
 # 🚀 Made by
 
 [gtourdia / @sousampere](https://github.com/sousampere)
