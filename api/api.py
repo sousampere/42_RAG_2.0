@@ -15,7 +15,7 @@ class SearchQuery(BaseModel):
 
 
 @app.post("/search")
-async def search(args: SearchQuery) -> dict[str, Any] | HTTPException:
+async def search(args: SearchQuery) -> dict[str, Any]:
     # Load RagProcessor
     rag = RagProcessor()
 
@@ -23,21 +23,21 @@ async def search(args: SearchQuery) -> dict[str, Any] | HTTPException:
     try:
         results = rag.search(query=args.query, k=args.k)
     except RagProcessorError as e:
-        return HTTPException(400, e)
+        raise HTTPException(400, e)
 
     # Print results
     return results.model_dump()
 
 
 @app.post("/answer")
-async def answer(args: SearchQuery) -> dict[str, Any] | HTTPException:
+async def answer(args: SearchQuery) -> dict[str, Any]:
     # Load RagProcessor
     rag = RagProcessor()
 
     try:
         answer = rag.answer(query=args.query, k=args.k)
     except RagProcessorError as e:
-        return HTTPException(400, e)
+        raise HTTPException(400, e)
 
     # Print results
     return {'response': answer}
