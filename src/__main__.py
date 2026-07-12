@@ -7,10 +7,11 @@ import os
 import logging
 
 from .rag_processor import RagProcessor, RagProcessorError
+from .evaluator import Evaluator, EvaluationError
 
 # Disable huggingface warnings
-os.environ['HF_HUB_DISABLE_WARNINGS'] = '1'
-logging.getLogger('transformers').setLevel(logging.ERROR)
+os.environ["HF_HUB_DISABLE_WARNINGS"] = "1"
+logging.getLogger("transformers").setLevel(logging.ERROR)
 
 
 class RagCLI:
@@ -31,17 +32,15 @@ class RagCLI:
         try:
             rag.index(max_chunk_size=max_chunk_size)
         except RagProcessorError as e:
-            print(f'[RAG] ❌ {Fore.RED}{e}{Fore.RESET}')
-            exit()
+            print(f"[RAG] ❌ {Fore.RED}{e}{Fore.RESET}")
+            exit(1)
 
         print(f"[RAG] ✅ {Fore.GREEN}Data indexed successfully !{Fore.RESET}")
 
         return None
 
     @staticmethod
-    def search(
-        query: str,
-            k: int = 5) -> None:
+    def search(query: str, k: int = 5) -> None:
         """Search the most relevant files in the dataset for a given query.
 
         Args:
@@ -53,26 +52,23 @@ class RagCLI:
 
         # Start searching using RagProcessor
         try:
-            results = rag.search(
-                query=query,
-                k=k
-            )
+            results = rag.search(query=query, k=k)
         except RagProcessorError as e:
-            print(f'[RAG] ❌ {Fore.RED}{e}{Fore.RESET}')
-            exit()
+            print(f"[RAG] ❌ {Fore.RED}{e}{Fore.RESET}")
+            exit(1)
 
         # Print results
         for row in results.retrieved_sources:
-            print(f'{Fore.RESET + row.file_path} {Fore.YELLOW}['
-                  f'{row.first_character_index}:{row.last_character_index}]')
+            print(
+                f"{Fore.RESET + row.file_path} {Fore.YELLOW}["
+                f"{row.first_character_index}:{row.last_character_index}]"
+            )
 
         return None
 
     @staticmethod
-    def search_dataset(
-        dataset_path: str,
-        save_directory: str,
-            k: int = 5) -> None:
+    def search_dataset(dataset_path: str,
+                       save_directory: str, k: int = 5) -> None:
         """Apply a search operation on a dataset of questions, and exporting
         the results in a given <save_directory> directory.
 
@@ -85,34 +81,31 @@ class RagCLI:
 
         try:
             dataset_results = rag.search_dataset(
-                dataset_path=dataset_path,
-                save_directory=save_directory,
-                k=k
+                dataset_path=dataset_path, save_directory=save_directory, k=k
             )
         except RagProcessorError as e:
-            print(f'[RAG] ❌ {Fore.RED}{e}{Fore.RESET}')
-            exit()
+            print(f"[RAG] ❌ {Fore.RED}{e}{Fore.RESET}")
+            exit(1)
 
         # Export search results
         search_results = dataset_results.model_dump()
         # Get dataset basename
         file_basename = os.path.basename(dataset_path)
         try:
-            with open(f'{save_directory}/{file_basename}', 'w') as f:
+            with open(f"{save_directory}/{file_basename}", "w") as f:
                 json.dump(search_results, f)
-        except (PermissionError):
-            print(f'[RAG] ❌ {Fore.RED}Could not save the output.{Fore.RESET}')
-            exit()
+        except PermissionError:
+            print(f"[RAG] ❌ {Fore.RED}Could not save the output.{Fore.RESET}")
+            exit(1)
 
-        print(f"[RAG] ✅ {Fore.GREEN}Dataset successfully "
-              f"processed !{Fore.RESET}")
+        print(
+            f"[RAG] ✅ {Fore.GREEN}Dataset successfully "
+            f"processed !{Fore.RESET}")
 
         return None
 
     @staticmethod
-    def answer(
-        query: str,
-            k: int = 5) -> None:
+    def answer(query: str, k: int = 5) -> None:
         """Generate a response to your query by giving the search result to
         an LLM, therefore augmenting it with a tailored response.
 
@@ -124,22 +117,18 @@ class RagCLI:
         rag = RagProcessor()
 
         try:
-            answer = rag.answer(
-                query=query,
-                k=k
-            )
+            answer = rag.answer(query=query, k=k)
         except RagProcessorError as e:
-            print(f'[RAG] ❌ {Fore.RED}{e}{Fore.RESET}')
-            exit()
+            print(f"[RAG] ❌ {Fore.RED}{e}{Fore.RESET}")
+            exit(1)
 
         print(answer)
 
         return None
 
     @staticmethod
-    def answer_dataset(
-        student_search_results_path: str,
-            save_directory: str) -> None:
+    def answer_dataset(student_search_results_path: str,
+                       save_directory: str) -> None:
         """Generates answers for the given <student_search_results_path> file
         containing the output of a previous "search_dataset" action.
 
@@ -155,26 +144,25 @@ class RagCLI:
                 student_search_results_path=student_search_results_path,
             )
         except RagProcessorError as e:
-            print(f'[RAG] ❌ {Fore.RED}{e}{Fore.RESET}')
-            exit()
+            print(f"[RAG] ❌ {Fore.RED}{e}{Fore.RESET}")
+            exit(1)
 
         # Export search results
         search_results = answers.model_dump()
         try:
-            with open(save_directory, 'w') as f:
+            with open(save_directory, "w") as f:
                 json.dump(search_results, f)
-        except (PermissionError):
-            print(f'[RAG] ❌ {Fore.RED}Could not save the output.{Fore.RESET}')
-            exit()
+        except PermissionError:
+            print(f"[RAG] ❌ {Fore.RED}Could not save the output.{Fore.RESET}")
+            exit(1)
 
         print(f"[RAG] ✅ {Fore.GREEN}Queries successfully answered !")
 
         return None
 
     @staticmethod
-    def evaluate(
-        student_search_results_path: str,
-            dataset_path: str) -> None:
+    def evaluate(student_search_results_path: str,
+                 dataset_path: str, k: int) -> None:
         """Compare retrieved results with ground truth data.
 
         Args:
@@ -182,9 +170,34 @@ class RagCLI:
             exported when running search on the dataset.
             dataset_path (str): Ground-truth dataset.
         """
-        print("Evaluating your results")
+        evaluator = Evaluator()
+
+        # Calculating results
+        try:
+            results = evaluator.evaluate(
+                student_search_results_path,
+                dataset_path,
+                k)
+        except EvaluationError as e:
+            print(f"[RAG] ❌ {Fore.RED}{e}{Fore.RESET}")
+            exit(1)
+
+        # Printing results
+        print(
+            f"{Fore.YELLOW}--- Evaluation results ---{Fore.RESET}\n"
+            f"Recall@1: {results.recall_at_1}\n"
+            f"Recall@3: {results.recall_at_3}\n"
+            f"Recall@5: {results.recall_at_5}\n"
+            f"Recall@10: {results.recall_at_10}\n"
+        )
+        if results.recall_at_5 < 0.8:
+            print(f"[RAG] ❌ {Fore.RED}Failed the evaluation :({Fore.RESET}")
+        else:
+            print(f"[RAG] ✅ {Fore.GREEN}Passed the evaluation !!{Fore.RESET}")
+
+        return None
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # Launch CLI
     fire.Fire(RagCLI)
