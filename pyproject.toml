@@ -21,4 +21,17 @@ dependencies = [
 dev = [
     "flake8>=7.3.0",
     "mypy>=2.2.0",
+    "types-colorama>=0.4.15.20260508",
+    "types-tqdm>=4.68.0.20260608",
 ]
+
+[tool.mypy]
+strict = true
+mypy_path = "src"
+explicit_package_bases = true
+namespace_packages = true
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ["fire", "bm25s"]
+ignore_missing_imports = true
