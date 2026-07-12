@@ -95,4 +95,4 @@ moulinette-docs: install
 	./moulinette/moulinette-ubuntu evaluate_student_search_results 'data/output/search_results/UnansweredQuestions/dataset_docs_public.json' 'data/datasets/AnsweredQuestions/dataset_docs_public.json' --k 10
 
 start-api: install
-	uv run uvicorn api.__main__:app --reload
+	uv run uvicorn api.api:app --reload
