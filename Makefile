@@ -8,7 +8,7 @@ PYTHON := $(VENV)/bin/python
 FLAKE8 := $(VENV)/bin/flake8
 MYPY := $(VENV)/bin/mypy
 
-PROJECT_START_DATE=2026-06-04
+PROJECT_START_DATE=2026-07-09
 PROJECT_NAME=42 RAG
 AUTHOR=sousampere
 GITHUB=sousampere/42_RAG_2.0
