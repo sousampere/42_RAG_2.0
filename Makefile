@@ -70,6 +70,7 @@ debug: install
 clean:
 	rm -rf data/processed/*
 	rm -rf data/output/search_results/*
+	rm -rf data/output/search_results_and_answer/*
 
 # --- Automation of running prompts ---
 
