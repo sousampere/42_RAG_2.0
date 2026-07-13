@@ -7,6 +7,7 @@ from langchain_text_splitters import Language, RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import DirectoryLoader, TextLoader
 import bm25s
 import json
+from json import JSONDecodeError
 
 from .data_models import MinimalSearchResults, MinimalSource
 from uuid import uuid4
@@ -247,5 +248,5 @@ class BM25sRetriever(BaseRetriever):
                 self._documents: list[Document] = [
                     Document(**doc_dict) for doc_dict in loaded_data
                 ]
-        except FileNotFoundError:
+        except (FileNotFoundError, PermissionError, JSONDecodeError):
             raise RetrieverError("Couldn't load a previous retriever.")

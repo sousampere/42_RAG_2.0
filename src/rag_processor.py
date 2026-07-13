@@ -89,7 +89,7 @@ class RagProcessor(AbstractRagProcessor):
         retriever.index(max_chunk_size, overlap=15/100)
         try:
             retriever.export()
-        except (FileNotFoundError, PermissionError):
+        except (FileNotFoundError, PermissionError, RetrieverError):
             raise RagProcessorError("Could not save the index.")
 
         return True
@@ -144,7 +144,7 @@ class RagProcessor(AbstractRagProcessor):
             with open(dataset_path, 'r') as f:
                 json_data = json.load(f)
             dataset = json_data['rag_questions']
-        except (PermissionError, FileNotFoundError):
+        except (PermissionError, FileNotFoundError, JSONDecodeError):
             raise RagProcessorError('Couldn\'t load the given dataset.')
 
         # Start gathering sources for each question
@@ -201,7 +201,10 @@ class RagProcessor(AbstractRagProcessor):
         )
 
         # Process data into LLM to get the query's answer
-        answer = str(llm.answer(results))
+        try:
+            answer = str(llm.answer(results))
+        except FileNotFoundError as e:
+            raise RagProcessorError(e)
 
         # Return LLM answer
         return answer

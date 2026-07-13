@@ -50,10 +50,14 @@ class LLM(LLMAugmenter):
         # Gather sources
         sources: list[str] = []
         for s in search_results.retrieved_sources:
-            with open(s.file_path, 'r') as f:
-                f_content = f.read()
-                sources.append(f_content[
-                    s.first_character_index:s.last_character_index])
+            try:
+                with open(s.file_path, 'r') as f:
+                    f_content = f.read()
+                    sources.append(f_content[
+                        s.first_character_index:s.last_character_index])
+            except (FileNotFoundError, OSError, PermissionError,
+                    UnicodeDecodeError):
+                raise FileNotFoundError(f'Failed to load {s.file_path}.')
 
         # Prepare message
         messages = [
