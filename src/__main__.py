@@ -91,8 +91,8 @@ class RagCLI:
         search_results = dataset_results.model_dump()
         # Get dataset basename
         file_basename = os.path.basename(dataset_path)
+        os.makedirs(save_directory, exist_ok=True)
         try:
-            os.makedirs(save_directory, exist_ok=True)
             with open(f"{save_directory}/{file_basename}", "w") as f:
                 json.dump(search_results, f)
         except PermissionError:

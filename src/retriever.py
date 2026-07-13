@@ -55,6 +55,18 @@ class MarkdownPythonDocumentLoader(AbstractDocumentLoader):
             ) -> list[Document]:
         """
         Method to load Documents from a given file format
+
+        Previous implementation had the code following code
+        that can split chunks depending on the language:
+
+        text_splitter = RecursiveCharacterTextSplitter.from_language(
+            language=language,
+            chunk_size=chunk_size,
+            chunk_overlap=int(chunk_size * overlap),
+            add_start_index=True)
+        chunks = text_splitter.split_documents(documents)
+
+        Then it was replace by this simple splitter, more efficient.
         """
         # Load files
         loader = DirectoryLoader(main_directory,
@@ -63,11 +75,12 @@ class MarkdownPythonDocumentLoader(AbstractDocumentLoader):
         documents = loader.load()
 
         # Chunk files
-        text_splitter = RecursiveCharacterTextSplitter.from_language(
-            language=language,
+        text_splitter = RecursiveCharacterTextSplitter(
+            separators=["\n\n", "\n", " ", ""],
             chunk_size=chunk_size,
             chunk_overlap=int(chunk_size * overlap),
-            add_start_index=True)
+            add_start_index=True
+        )
         chunks = text_splitter.split_documents(documents)
 
         # Add 'end_index' key in metadata

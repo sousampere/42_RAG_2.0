@@ -7,10 +7,16 @@ from .data_models import StudentSearchResults, RagDataset
 
 
 class EvaluationError(Exception):
+    """
+    Errors related to the evaluation process.
+    """
     pass
 
 
 class EvaluationResult(BaseModel):
+    """
+    Class representing an evaluation result.
+    """
     recall_at_1: float
     recall_at_3: float
     recall_at_5: float

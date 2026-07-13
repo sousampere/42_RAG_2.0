@@ -94,11 +94,11 @@ answer-dataset: install
 # --- Moulinette ---
 
 moulinette-code: install
-	uv run python -m src search_dataset --dataset_path 'data/datasets/UnansweredQuestions/dataset_code_public.json' --k $(K) --save_directory data/output/search_results/UnansweredQuestions/dataset_code_public.json
+	uv run python -m src search_dataset --dataset_path 'data/datasets/UnansweredQuestions/dataset_code_public.json' --k $(K) --save_directory data/output/search_results/UnansweredQuestions
 	./moulinette/moulinette-ubuntu evaluate_student_search_results 'data/output/search_results/UnansweredQuestions/dataset_code_public.json' 'data/datasets/AnsweredQuestions/dataset_code_public.json' --k $(K)
 
 moulinette-docs: install
-	uv run python -m src search_dataset --dataset_path 'data/datasets/UnansweredQuestions/dataset_docs_public.json' --k $(K) --save_directory data/output/search_results/UnansweredQuestions/dataset_docs_public.json
+	uv run python -m src search_dataset --dataset_path 'data/datasets/UnansweredQuestions/dataset_docs_public.json' --k $(K) --save_directory data/output/search_results/UnansweredQuestions
 	./moulinette/moulinette-ubuntu evaluate_student_search_results 'data/output/search_results/UnansweredQuestions/dataset_docs_public.json' 'data/datasets/AnsweredQuestions/dataset_docs_public.json' --k $(K)
 
 start-api: install
