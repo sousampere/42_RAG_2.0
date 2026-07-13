@@ -15,6 +15,8 @@ GITHUB=sousampere/42_RAG_2.0
 
 ARGV=
 MAX_CHUNK_SIZE=2000
+K=10
+QUERY="What is the type hint for the kv_range_for_decode parameter in the _attention_with_mask method?"
 
 # --- Colors ---
 
@@ -68,6 +70,7 @@ debug: install
 clean:
 	rm -rf data/processed/*
 	rm -rf data/output/search_results/*
+	rm -rf data/output/search_results_and_answer/*
 
 # --- Automation of running prompts ---
 
@@ -76,23 +79,27 @@ index: install
 	$(PYTHON) -m $(NAME) index --max_chunk_size $(MAX_CHUNK_SIZE)
 
 search: install
-	uv run python -m src search "How to setup an OpenAI server ?" --k 5
+	uv run python -m src search $(QUERY) --k $(K)
 
 search_dataset: install
-	uv run python -m src search_dataset --dataset_path 'data/datasets/UnansweredQuestions/dataset_code_public.json' --k 10 --save_directory data/output/search_results/UnansweredQuestions
+	uv run python -m src search_dataset --dataset_path 'data/datasets/UnansweredQuestions/dataset_code_public.json' --k $(K) --save_directory data/output/search_results/UnansweredQuestions
+	uv run python -m src search_dataset --dataset_path 'data/datasets/UnansweredQuestions/dataset_docs_public.json' --k $(K) --save_directory data/output/search_results/UnansweredQuestions
 
 answer: install
-	uv run python -m src answer "What is the type hint for the kv_range_for_decode parameter in the _attention_with_mask method?"
+	uv run python -m src answer $(QUERY)
+
+answer-dataset: install
+	uv run python -m src answer_dataset --student_search_results_path data/output/search_results/UnansweredQuestions/dataset_code_public.json --save_directory data/output/search_results_and_answer/AnsweredQuestions
 
 # --- Moulinette ---
 
 moulinette-code: install
-	uv run python -m src search_dataset --dataset_path 'data/datasets/UnansweredQuestions/dataset_code_public.json' --k 10 --save_directory data/output/search_results/UnansweredQuestions/dataset_code_public.json
-	./moulinette/moulinette-ubuntu evaluate_student_search_results 'data/output/search_results/UnansweredQuestions/dataset_code_public.json' 'data/datasets/AnsweredQuestions/dataset_code_public.json' --k 10
+	uv run python -m src search_dataset --dataset_path 'data/datasets/UnansweredQuestions/dataset_code_public.json' --k $(K) --save_directory data/output/search_results/UnansweredQuestions/dataset_code_public.json
+	./moulinette/moulinette-ubuntu evaluate_student_search_results 'data/output/search_results/UnansweredQuestions/dataset_code_public.json' 'data/datasets/AnsweredQuestions/dataset_code_public.json' --k $(K)
 
 moulinette-docs: install
-	uv run python -m src search_dataset --dataset_path 'data/datasets/UnansweredQuestions/dataset_docs_public.json' --k 10 --save_directory data/output/search_results/UnansweredQuestions/dataset_docs_public.json
-	./moulinette/moulinette-ubuntu evaluate_student_search_results 'data/output/search_results/UnansweredQuestions/dataset_docs_public.json' 'data/datasets/AnsweredQuestions/dataset_docs_public.json' --k 10
+	uv run python -m src search_dataset --dataset_path 'data/datasets/UnansweredQuestions/dataset_docs_public.json' --k $(K) --save_directory data/output/search_results/UnansweredQuestions/dataset_docs_public.json
+	./moulinette/moulinette-ubuntu evaluate_student_search_results 'data/output/search_results/UnansweredQuestions/dataset_docs_public.json' 'data/datasets/AnsweredQuestions/dataset_docs_public.json' --k $(K)
 
 start-api: install
 	uv run uvicorn api.api:app --reload
