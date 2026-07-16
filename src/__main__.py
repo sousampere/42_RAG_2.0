@@ -6,6 +6,7 @@ import json
 import os
 import logging
 
+from .retriever import RetrieverError
 from .rag_processor import RagProcessor, RagProcessorError
 from .evaluator import Evaluator, EvaluationError
 
@@ -31,7 +32,7 @@ class RagCLI:
 
         try:
             rag.index(max_chunk_size=max_chunk_size)
-        except RagProcessorError as e:
+        except (RagProcessorError, RetrieverError) as e:
             print(f"[RAG] ❌ {Fore.RED}{e}{Fore.RESET}")
             exit(1)
 
@@ -53,7 +54,7 @@ class RagCLI:
         # Start searching using RagProcessor
         try:
             results = rag.search(query=query, k=k)
-        except RagProcessorError as e:
+        except (RagProcessorError, RetrieverError) as e:
             print(f"[RAG] ❌ {Fore.RED}{e}{Fore.RESET}")
             exit(1)
 
@@ -83,7 +84,7 @@ class RagCLI:
             dataset_results = rag.search_dataset(
                 dataset_path=dataset_path, k=k
             )
-        except RagProcessorError as e:
+        except (RagProcessorError, RetrieverError) as e:
             print(f"[RAG] ❌ {Fore.RED}{e}{Fore.RESET}")
             exit(1)
 
@@ -119,7 +120,7 @@ class RagCLI:
 
         try:
             answer = rag.answer(query=query, k=k)
-        except RagProcessorError as e:
+        except (RagProcessorError, RetrieverError) as e:
             print(f"[RAG] ❌ {Fore.RED}{e}{Fore.RESET}")
             exit(1)
 
@@ -144,7 +145,7 @@ class RagCLI:
             answers = rag.answer_dataset(
                 student_search_results_path=student_search_results_path,
             )
-        except RagProcessorError as e:
+        except (RagProcessorError, RetrieverError) as e:
             print(f"[RAG] ❌ {Fore.RED}{e}{Fore.RESET}")
             exit(1)
 
@@ -201,4 +202,7 @@ class RagCLI:
 
 if __name__ == "__main__":
     # Launch CLI
-    fire.Fire(RagCLI)
+    try:
+        fire.Fire(RagCLI)
+    except (EOFError, KeyboardInterrupt):
+        print('Interrupted. Goodbye :)')

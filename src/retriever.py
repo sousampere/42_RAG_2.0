@@ -56,14 +56,24 @@ class MarkdownPythonDocumentLoader(AbstractDocumentLoader):
         """
         Method to load Documents from a given file format
 
-        Previous implementation had the code following code
-        that can split chunks depending on the language:
+        There are two possibilities :
 
+        # Code adapted (language specific)
         text_splitter = RecursiveCharacterTextSplitter.from_language(
             language=language,
             chunk_size=chunk_size,
             chunk_overlap=int(chunk_size * overlap),
             add_start_index=True)
+        chunks = text_splitter.split_documents(documents)
+
+        # Code for everything, which is better, but to comply with the
+        # subject, I have to make two distincts splitters.
+        text_splitter = RecursiveCharacterTextSplitter(
+            separators=["\n\n", "\n", " ", ""],
+            chunk_size=chunk_size,
+            chunk_overlap=int(chunk_size * overlap),
+            add_start_index=True
+        )
         chunks = text_splitter.split_documents(documents)
 
         Then it was replace by this simple splitter, more efficient.
@@ -72,16 +82,30 @@ class MarkdownPythonDocumentLoader(AbstractDocumentLoader):
         loader = DirectoryLoader(main_directory,
                                  glob=f"**/*.{extension}",
                                  loader_cls=TextLoader)
-        documents = loader.load()
+        try:
+            documents = loader.load()
+        except (FileNotFoundError, ValueError, ImportError):
+            raise RetrieverError('Could not load a part of your dataset. '
+                                 'Please make sure it\'s present under '
+                                 './data/raw/ and that the files are not '
+                                 'corrupted !')
 
         # Chunk files
-        text_splitter = RecursiveCharacterTextSplitter(
-            separators=["\n\n", "\n", " ", ""],
-            chunk_size=chunk_size,
-            chunk_overlap=int(chunk_size * overlap),
-            add_start_index=True
-        )
-        chunks = text_splitter.split_documents(documents)
+        if language == Language.MARKDOWN:
+            text_splitter = RecursiveCharacterTextSplitter(
+                separators=["\n\n", "\n", " ", ""],
+                chunk_size=chunk_size,
+                chunk_overlap=int(chunk_size * overlap),
+                add_start_index=True
+            )
+            chunks = text_splitter.split_documents(documents)
+        else:
+            text_splitter = RecursiveCharacterTextSplitter.from_language(
+                language=language,
+                chunk_size=chunk_size,
+                chunk_overlap=int(chunk_size * overlap),
+                add_start_index=True)
+            chunks = text_splitter.split_documents(documents)
 
         # Add 'end_index' key in metadata
         for doc in chunks:
@@ -141,7 +165,13 @@ class BM25sRetriever(BaseRetriever):
 
         # Start indexing
         self._retriever = bm25s.BM25()
-        self._retriever.index(tokenized_corpus)
+        try:
+            self._retriever.index(tokenized_corpus)
+        except ValueError:
+            raise RetrieverError('Could not index your corpus. '
+                                 'Maybe you fergot to put '
+                                 '.py and .md files inside the '
+                                 './data/raw folder ?')
 
         return self._retriever
 
