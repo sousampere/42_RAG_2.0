@@ -201,4 +201,7 @@ class RagCLI:
 
 if __name__ == "__main__":
     # Launch CLI
-    fire.Fire(RagCLI)
+    try:
+        fire.Fire(RagCLI)
+    except (EOFError, KeyboardInterrupt):
+        print('Interrupted. Goodbye :)')
