@@ -72,7 +72,13 @@ class MarkdownPythonDocumentLoader(AbstractDocumentLoader):
         loader = DirectoryLoader(main_directory,
                                  glob=f"**/*.{extension}",
                                  loader_cls=TextLoader)
-        documents = loader.load()
+        try:
+            documents = loader.load()
+        except (FileNotFoundError, ValueError, ImportError):
+            raise RetrieverError('Could not load a part of your dataset. '
+                                 'Please make sure it\'s present under '
+                                 './data/raw/ and that the files are not '
+                                 'corrupted !')
 
         # Chunk files
         text_splitter = RecursiveCharacterTextSplitter(
@@ -141,7 +147,13 @@ class BM25sRetriever(BaseRetriever):
 
         # Start indexing
         self._retriever = bm25s.BM25()
-        self._retriever.index(tokenized_corpus)
+        try:
+            self._retriever.index(tokenized_corpus)
+        except ValueError:
+            raise RetrieverError('Could not index your corpus. '
+                                 'Maybe you fergot to put '
+                                 '.py and .md files inside the '
+                                 './data/raw folder ?')
 
         return self._retriever
 
