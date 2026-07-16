@@ -91,12 +91,21 @@ class MarkdownPythonDocumentLoader(AbstractDocumentLoader):
                                  'corrupted !')
 
         # Chunk files
-        text_splitter = RecursiveCharacterTextSplitter.from_language(
-            language=language,
-            chunk_size=chunk_size,
-            chunk_overlap=int(chunk_size * overlap),
-            add_start_index=True)
-        chunks = text_splitter.split_documents(documents)
+        if language == Language.MARKDOWN:
+            text_splitter = RecursiveCharacterTextSplitter(
+                separators=["\n\n", "\n", " ", ""],
+                chunk_size=chunk_size,
+                chunk_overlap=int(chunk_size * overlap),
+                add_start_index=True
+            )
+            chunks = text_splitter.split_documents(documents)
+        else:
+            text_splitter = RecursiveCharacterTextSplitter.from_language(
+                language=language,
+                chunk_size=chunk_size,
+                chunk_overlap=int(chunk_size * overlap),
+                add_start_index=True)
+            chunks = text_splitter.split_documents(documents)
 
         # Add 'end_index' key in metadata
         for doc in chunks:

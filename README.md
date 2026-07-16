@@ -62,7 +62,7 @@ uv run python -m src answer_dataset --student_search_results_path 'data/output/s
 
 I used 42 user [kebertra / @KeroBeros68](https://github.com/KeroBeros68)'s Obsidian vault as a way to gather informations about the creation of a bm25s + langchain retriever.
 
-The rest are simple web research about tqdm, how to use an LLM using huggingface, etc.
+The rest are simple web and AI queries research about tqdm, how to use an LLM using huggingface, etc.
 
 # 🔗​ General Software Architecture
 
