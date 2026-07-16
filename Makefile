@@ -101,5 +101,11 @@ moulinette-docs: install
 	uv run python -m src search_dataset --dataset_path 'data/datasets/UnansweredQuestions/dataset_docs_public.json' --k $(K) --save_directory data/output/search_results/UnansweredQuestions
 	./moulinette/moulinette-ubuntu evaluate_student_search_results 'data/output/search_results/UnansweredQuestions/dataset_docs_public.json' 'data/datasets/AnsweredQuestions/dataset_docs_public.json' --k $(K)
 
+evaluate: install
+	uv run python -m src evaluate data/output/search_results/UnansweredQuestions/dataset_code_public.json data/datasets/AnsweredQuestions/dataset_code_public.json --k 10
+	uv run python -m src evaluate data/output/search_results/UnansweredQuestions/dataset_docs_public.json data/datasets/AnsweredQuestions/dataset_docs_public.json --k 10
+
+# --- API ---
+
 start-api: install
 	uv run uvicorn api.api:app --reload
